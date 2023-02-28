@@ -58,9 +58,10 @@ class FlutterWallpaperAndroidPlugin: FlutterPlugin, MethodCallHandler {
       if (url == null)
         throw NullPointerException()
 
-      when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N -> setWallpaper(url, isHomeScreen = true, isLockScreen = false)
-        else -> false
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        setWallpaper(url, isHomeScreen = true, isLockScreen = false)
+      } else {
+        return false;
       }
 
     } catch (e: Exception) {
@@ -74,13 +75,19 @@ class FlutterWallpaperAndroidPlugin: FlutterPlugin, MethodCallHandler {
     val wallpaperManager = WallpaperManager.getInstance(context)
     val wallpaperFile = File(filePath)
 
+
     return if (wallpaperFile.exists()) {
+      Log.d("aaa", wallpaperFile.absolutePath)
+
       val bitmap = BitmapFactory.decodeFile(wallpaperFile.absolutePath)
       val wallpaperType = when {
         isLockScreen -> WallpaperManager.FLAG_LOCK
         isHomeScreen -> WallpaperManager.FLAG_SYSTEM
         else -> WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
       }
+
+      Log.d("setBitmap", "aaa")
+
       wallpaperManager.setBitmap(bitmap, null, true, wallpaperType)
 
       true;
