@@ -54,15 +54,16 @@ class FlutterWallpaperAndroidPlugin: FlutterPlugin, MethodCallHandler {
   }
 
   private fun setWallpaperFromUrl(url: String?): Boolean {
-    return try {
+     try {
       if (url == null)
         throw NullPointerException()
 
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        setWallpaper(url, isHomeScreen = true, isLockScreen = false)
-      } else {
-        return false;
-      }
+       return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+         setWallpaper(url, isHomeScreen = true, isLockScreen = false)
+       } else {
+         Log.d("aaa", Build.VERSION.SDK_INT.toString() + " >= " + Build.VERSION_CODES.N.toString() + " = " + (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N).toString())
+         false;
+       }
 
     } catch (e: Exception) {
       throw e
