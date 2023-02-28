@@ -64,7 +64,7 @@ class FlutterWallpaperAndroidPlugin: FlutterPlugin, MethodCallHandler {
       }
 
     } catch (e: Exception) {
-      return false;
+      throw e
     }
   }
 
@@ -85,8 +85,7 @@ class FlutterWallpaperAndroidPlugin: FlutterPlugin, MethodCallHandler {
 
       true;
     } else {
-      false;
-      // throw FileNotFoundException("Wallpaper file not found")
+      throw FileNotFoundException("Wallpaper file not found")
     }
   }
 
