@@ -39,7 +39,13 @@ class FlutterWallpaperAndroidPlugin: FlutterPlugin, MethodCallHandler {
         "setWallpaperFromUrl" -> {
           Log.d("Flutter Wallpaper","setWallpaperFromUrl invoked");
           val url: String? = call.argument("path")
-          setWallpaperFromUrl(url)
+          val success = setWallpaperFromUrl(url)
+
+          return if (success) {
+            result.success(true)
+          } else {
+            result.success(false)
+          }
         }
         else -> {
           result.notImplemented()
