@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_wallpaper_android/flutter_wallpaper_android.dart';
+import 'package:image_picker/image_picker.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,6 +19,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
   final _flutterWallpaperAndroidPlugin = FlutterWallpaperAndroid();
+  final _picker = ImagePicker();
 
   @override
   void initState() {
@@ -32,7 +34,8 @@ class _MyAppState extends State<MyApp> {
     // We also handle the message potentially returning null.
     try {
       platformVersion =
-          await _flutterWallpaperAndroidPlugin.getPlatformVersion() ?? 'Unknown platform version';
+          await _flutterWallpaperAndroidPlugin.getPlatformVersion() ??
+              'Unknown platform version';
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
@@ -56,6 +59,16 @@ class _MyAppState extends State<MyApp> {
         ),
         body: Center(
           child: Text('Running on: $_platformVersion\n'),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            final image = await _picker.pickImage(source: ImageSource.gallery);
+            if (image != null) {
+              await _flutterWallpaperAndroidPlugin
+                  .setWallpaperFromUrl(image.path);
+            }
+          },
+          child: const Icon(Icons.add),
         ),
       ),
     );
