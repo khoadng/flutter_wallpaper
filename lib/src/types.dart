@@ -1,0 +1,4 @@
+enum PreferredWallpaperType {
+  home,
+  lock,
+}

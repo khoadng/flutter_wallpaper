@@ -36,10 +36,16 @@ class FlutterWallpaperAndroidPlugin: FlutterPlugin, MethodCallHandler {
         "getPlatformVersion" -> {
           result.success("Android ${Build.VERSION.RELEASE}")
         }
-        "setWallpaperFromUrl" -> {
-          Log.d("Flutter Wallpaper","setWallpaperFromUrl invoked");
-          val url: String? = call.argument("url")
-          val success = setWallpaperFromUrl(url)
+        "setWallpaperFromImagePath" -> {
+          val path: String? = call.argument("path")
+          val typeInt: Int = call.argument("type") ?: throw Exception("Type is null")
+          val type = when (typeInt) {
+              0 -> WallpaperType.HOME
+              1 -> WallpaperType.LOCK
+              else -> WallpaperType.HOME
+          }
+
+          val success = setWallpaperFromImagePath(path, type)
 
           return if (success) {
             result.success(true)
@@ -53,15 +59,19 @@ class FlutterWallpaperAndroidPlugin: FlutterPlugin, MethodCallHandler {
     }
   }
 
-  private fun setWallpaperFromUrl(url: String?): Boolean {
+  enum class WallpaperType {
+    HOME,
+    LOCK,
+  }
+
+  private fun setWallpaperFromImagePath(path: String?, type: WallpaperType): Boolean {
      try {
-      if (url == null)
+      if (path == null)
         throw NullPointerException()
 
        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-         setWallpaper(url, isHomeScreen = true, isLockScreen = false)
+         setWallpaper(path, type)
        } else {
-         Log.d("aaa", Build.VERSION.SDK_INT.toString() + " >= " + Build.VERSION_CODES.N.toString() + " = " + (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N).toString())
          false;
        }
 
@@ -72,22 +82,18 @@ class FlutterWallpaperAndroidPlugin: FlutterPlugin, MethodCallHandler {
 
 
   @RequiresApi(Build.VERSION_CODES.N)
-  fun setWallpaper(filePath: String, isHomeScreen: Boolean, isLockScreen: Boolean) : Boolean {
+  fun setWallpaper(filePath: String, type: WallpaperType) : Boolean {
     val wallpaperManager = WallpaperManager.getInstance(context)
     val wallpaperFile = File(filePath)
 
 
     return if (wallpaperFile.exists()) {
-      Log.d("aaa", wallpaperFile.absolutePath)
-
       val bitmap = BitmapFactory.decodeFile(wallpaperFile.absolutePath)
-      val wallpaperType = when {
-        isLockScreen -> WallpaperManager.FLAG_LOCK
-        isHomeScreen -> WallpaperManager.FLAG_SYSTEM
-        else -> WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK
-      }
 
-      Log.d("setBitmap", "aaa")
+      val wallpaperType = when (type) {
+        WallpaperType.HOME -> WallpaperManager.FLAG_SYSTEM
+        WallpaperType.LOCK -> WallpaperManager.FLAG_LOCK
+      }
 
       wallpaperManager.setBitmap(bitmap, null, true, wallpaperType)
 

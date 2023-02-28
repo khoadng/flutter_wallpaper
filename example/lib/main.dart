@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 
-import 'package:flutter/services.dart';
-import 'package:flutter_wallpaper_android/flutter_wallpaper_android.dart';
+import 'package:flutter_wallpaper_android/flutter_wallpaper.dart';
 import 'package:image_picker/image_picker.dart';
 
 void main() {
@@ -17,38 +15,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
-  final _flutterWallpaperAndroidPlugin = FlutterWallpaperAndroid();
   final _picker = ImagePicker();
-
-  @override
-  void initState() {
-    super.initState();
-    initPlatformState();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
-    try {
-      platformVersion =
-          await _flutterWallpaperAndroidPlugin.getPlatformVersion() ??
-              'Unknown platform version';
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _platformVersion = platformVersion;
-    });
-  }
+  final _textEditingController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -57,18 +25,41 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            final image = await _picker.pickImage(source: ImageSource.gallery);
-            if (image != null) {
-              await _flutterWallpaperAndroidPlugin
-                  .setWallpaperFromUrl(image.path);
-            }
-          },
-          child: const Icon(Icons.add),
+        body: Column(
+          children: [
+            ElevatedButton(
+              onPressed: () async {
+                final platform = Theme.of(context).platform;
+                final image =
+                    await _picker.pickImage(source: ImageSource.gallery);
+                if (image != null) {
+                  await setWallpaperFromImagePath(
+                    path: image.path,
+                    type: PreferredWallpaperType.home,
+                    platform: platform,
+                  );
+                }
+              },
+              child: const Text('Set wallpaper from a file'),
+            ),
+            const Divider(),
+            TextField(
+              controller: _textEditingController,
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final url = _textEditingController.text;
+                final platform = Theme.of(context).platform;
+
+                await setWallpaperFromNetworkImage(
+                  imageUrl: url,
+                  type: PreferredWallpaperType.home,
+                  platform: platform,
+                );
+              },
+              child: const Text('Set wallpaper from URL'),
+            ),
+          ],
         ),
       ),
     );
